@@ -1,6 +1,9 @@
 import javax.swing.text.html.Option;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.DoubleToIntFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.*;
@@ -239,5 +242,120 @@ public class Demo {
         Map<Integer, String> indexToValueMap = IntStream.range(0, numbers.size()).boxed().collect(Collectors.toMap(i->i, i-> numbers.get(i).toString()));
         System.out.println(indexToValueMap); // {0=1, 1=2, 2=3, 3=4, 4=5}
 
+        // Filtering based on multiple conditions
+        List<Integer> filtered = numbers.stream().filter(n -> n > 0 &&  n < 4)
+                .toList();
+        System.out.println(filtered); // [1, 2, 3]
+
+        // Concatenating Strings with delimiter
+        String delimited = strings.stream().collect(Collectors.joining(" | "));
+        System.out.println(delimited); // Performance | Tester | Hello
+
+        // Mapping elements to their square roots
+        List<Double> squareRoots = numbers.stream().map(Math::sqrt).toList();
+        System.out.println(squareRoots); // [1.0, 1.4142135623730951, 1.7320508075688772, 2.0, 2.23606797749979]
+
+        // Finding the average length of the strings
+        double avgLength = strings.stream().mapToInt(String::length).average().orElse(0.0);
+        System.out.println(avgLength); // 7.33333333333
+
+        // Grouping elements by their first character
+        Map<Character, List<String>> groupedByFirstChar = strings.stream().collect(Collectors.groupingBy(s -> s.charAt(0)));
+        System.out.println(groupedByFirstChar); // {P=[Performance], T=[Tester], H=[Hello]}
+
+        // Checking if any string is empty
+        boolean isEmptyString = strings.stream().anyMatch(String::isEmpty);
+        System.out.println(isEmptyString); // false
+
+        // Finding the longest word in the string list
+        Optional<String> longestWord = strings.stream().max(Comparator.comparingInt(String::length));
+        System.out.println(longestWord.get()); // Performance
+
+        // Summing elements with parallel procesing
+        int sumParallel = numbers.stream().mapToInt(Integer::intValue).sum();
+        System.out.println(sumParallel); // 15
+
+        // Reverse a string  - here using StringBuilder
+        String reversed = new StringBuilder("Performance").reverse().toString();
+        System.out.println(reversed); // ecnamrofreP
+
+        // Finding the common elements between 2 lists
+        List<Integer> input2List = Arrays.asList(2,3,5,7); // assume numbers = [1,2,3,4,5]
+        List<Integer> commonElements = numbers.stream().filter(input2List::contains).toList();
+        System.out.println(commonElements); // [2, 3, 5]
+
+        // Creating a stream of dates in range
+        LocalDate startDate = LocalDate.of(2024, 1 ,1);
+        LocalDate endDate = LocalDate.of(2024, 1, 5);
+        Stream<LocalDate> dateStream = Stream.iterate(startDate, date -> date.plusDays(1)).limit(ChronoUnit.DAYS.between(startDate, endDate));
+        System.out.println(dateStream.toList()); // [2024-01-01, 2024-01-02, 2024-01-03, 2024-01-04]
+
+        // Collecting elements to an unmodifiable list
+        List<Integer> unmodifiableList = numbers.stream().collect(Collectors.toUnmodifiableList());
+        System.out.println(unmodifiableList); // [1, 2, 3, 4, 5]
+
+        // Finding the most common character
+        Optional<Character> mostCommonCharacter = strings.stream().flatMapToInt(CharSequence::chars).mapToObj(c -> (char) c)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream()
+                .max(Map.Entry.comparingByValue()).map(Map.Entry::getKey);
+        System.out.println(mostCommonCharacter.get()); // e
+
+        // Finding the shortest string
+        Optional<String> shortestString = strings.stream().min(Comparator.comparingInt(String::length));
+        System.out.println(shortestString.get()); // Hello
+
+        // Check if any string is a palindrome
+        boolean palindrome = strings.stream().anyMatch(s -> s.contentEquals(new StringBuilder(s).reverse()));
+        System.out.println(palindrome); // false
+
+        // Combining elements with a custom logic
+        Map<Integer, List<String>> combinedMap = strings.stream()
+                .collect(Collectors.groupingBy(String::length, Collectors.mapping(String::toUpperCase, Collectors.toList())));
+        System.out.println(combinedMap); // {5=[HELLO], 6=[TESTER], 11=[PERFORMANCE]}
+
+        // Summing the ascii values of characters in a string
+        int sumAscii = "Performance".chars().sum();
+        System.out.println(sumAscii); //1138
+
+        // Check if all the elements are uppercase
+        boolean isAllUpper = strings.stream().allMatch(s -> s.equals(s.toUpperCase()));
+        System.out.println(isAllUpper); // false
+
+        // checking if all the elements are equal
+        boolean allEqual = numbers.stream().distinct().limit(2).count() <= 1;
+        System.out.println(allEqual); // false
+
+        // Last occurrence of an element in a list
+        OptionalInt lastIndex = IntStream.range(0, numbers.size()).reduce((i, j) -> numbers.get(j).equals(target) ? j : i);
+        System.out.println(lastIndex.getAsInt()); // 3
+
+        // Finding the medial of numbers
+        OptionalDouble median = numbers.stream().mapToDouble(Integer::doubleValue).skip((count-1) / 2).limit(2 - count%2).average();
+        System.out.println(median.getAsDouble()); // 3.0
+
+        // Checking if all the elements contains certain substring
+        boolean containAllSubstring = strings.stream().allMatch(s -> s.contains("Perf"));
+        System.out.println(containAllSubstring); // false
+
+        // Finding the longest palindrome
+        Optional<String> longestPalindrome = strings.stream().filter(s -> s.equals(new StringBuilder(s).reverse().toString())).max(Comparator.comparingInt(String::length));
+        System.out.println(longestPalindrome.orElse("No palindrome available")); // No palindrome available
+
+        // Finding the shortest palindrome
+        Optional<String> shortestPalindrome = strings.stream().filter(s -> s.equals(new StringBuilder(s).reverse().toString())).min(Comparator.comparingInt(String::length));
+        System.out.println(longestPalindrome.orElse("No palindrome available")); // No palindrome available
+
+        // Checking if any element matches a reges pattern
+        boolean anyMatchesPattern = strings.stream().anyMatch(s -> s.matches("Hello"));
+        System.out.println(anyMatchesPattern); // true
+
     }
 }
+
+
+
+
+
+
+
+
